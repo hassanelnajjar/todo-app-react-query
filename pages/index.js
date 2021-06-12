@@ -1,6 +1,6 @@
 import React from 'react';
 import { post, get, patch } from 'axios';
-import { v4 as uuidv4 } from 'uuid';
+import { useQuery, useMutation } from 'react-query';
 
 const Posts = ({ setId }) => {
 	const { posts } = useTodos();
@@ -106,6 +106,10 @@ export default index;
 
 const useTodos = () => {
 	console.log('useTodos');
+	const aaaa = useQuery('todos', () =>
+		get('/api/todos').then((res) => res.data)
+	);
+	console.log(aaaa);
 	const { refetch, posts, loading, setPosts, setLoading } = useTodosContext();
 	React.useEffect(() => {
 		console.log('useEffect - useTodos');
@@ -124,11 +128,6 @@ const context = React.createContext();
 const Provider = ({ children }) => {
 	const [posts, setPosts] = React.useState([]);
 	const [loading, setLoading] = React.useState(true);
-	const activePromise = React.useRef(false);
-
-	console.log('provider render');
-	console.log('posts provider', posts);
-
 	const refetch = () => {
 		(async () => {
 			const { data: posts } = await get('/api/todos');
