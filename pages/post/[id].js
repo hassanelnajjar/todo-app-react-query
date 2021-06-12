@@ -3,7 +3,7 @@ import { get, patch } from 'axios';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 const Post = () => {
-	const { loading, todoItem, setTodoItem, setLoading, router } = useTodos();
+	const { loading, todoItem, setTodoItem, setLoading, router } = useTodo();
 
 	const editTodo = async (id, e) => {
 		e.preventDefault();
@@ -18,6 +18,8 @@ const Post = () => {
 	return (
 		<>
 			<p>Todo Content</p>
+			<p>Todo : {todoItem.id}</p>
+
 			<button style={{ display: 'block' }}>
 				<Link href='/'>Home</Link>
 			</button>
@@ -48,7 +50,7 @@ const Post = () => {
 
 export default Post;
 
-const useTodos = () => {
+const useTodo = () => {
 	const router = useRouter();
 	const [loading, setLoading] = React.useState(true);
 	const [todoItem, setTodoItem] = React.useState({

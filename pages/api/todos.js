@@ -7,6 +7,7 @@ export default async (req, res) => {
 	})();
 
 	const method = req.method;
+	console.log(todos);
 	if (method === 'GET') return res.status(200).json(todos);
 	if (method === 'PATCH') {
 		todos = [...todos.filter((todo) => todo.id !== req.body.id), req.body];
