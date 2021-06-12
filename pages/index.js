@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable react/button-has-type */
 /* eslint-disable no-shadow */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
@@ -23,29 +24,39 @@ const useTodoQuery = (id) =>
   useQuery('todo', () => get(`/api/todo/${id}`).then((res) => res.data));
 
 const Posts = ({ setId }) => {
-  const { data: posts, status } = useTodosQuery();
-  return status === 'success'
-    ? React.Children.toArray(
-        posts.map(({ title, content, id }) => (
-          <div>
-            <div onClick={() => setId(id)} style={{ cursor: 'pointer' }}>
-              <span>
-                Title:
-                {title}
-              </span>
-              <span>----</span>
-              <span>
-                Content:
-                {content}
-              </span>
-            </div>
-          </div>
-        ))
-      )
-    : 'loading....';
+  const { data: posts, isFetching, isLoading } = useTodosQuery();
+  return isLoading ? (
+    'loading....'
+  ) : (
+    <>
+      {isFetching
+        ? 'updating...'
+        : React.Children.toArray(
+            posts.map(({ title, content, id }) => (
+              <div>
+                <div onClick={() => setId(id)} style={{ cursor: 'pointer' }}>
+                  <span>
+                    Title:
+                    {title}
+                  </span>
+                  <span>----</span>
+                  <span>
+                    Content:
+                    {content}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+    </>
+  );
 };
 const Post = () => {
-  const mutation = useMutation((newTodo) => post('/api/todos', newTodo));
+  const mutation = useMutation((newTodo) => post('/api/todos', newTodo), {
+    onSuccess: async () => {
+      queryClient.invalidateQueries('todos');
+    },
+  });
   const submitButton = async (e) => {
     e.preventDefault();
     mutation.mutate({
@@ -76,14 +87,14 @@ const PostCount = () => {
 };
 
 const PostSearch = () => {
-  const [searchResult, setSearchResult] = React.useState([]);
-  const { data: posts } = useTodosQuery();
-
+  const { data: posts, isLoading, isFetching } = useTodosQuery();
+  const [activeId, setActiveId] = React.useState('');
   const searchById = (e) => {
     e.preventDefault();
-    const id = e.target[0].value;
-    const result = posts.filter((post) => post.id === id);
-    setSearchResult(result);
+    // const id = e.target[0].value;
+    // const result = posts.filter((post) => post.id === id);
+    // setSearchResult(result);
+    setActiveId(e.target[0].value);
   };
 
   return (
@@ -91,11 +102,21 @@ const PostSearch = () => {
       <label htmlFor="">
         Search By Id
         <input type="search" />
-        <details>
-          {React.Children.toArray(
-            searchResult.map((post) => <p>{post.content}</p>)
+        <div style={{ minHeight: '10vh', border: '1px solid red' }}>
+          {isLoading ? (
+            'Loading...'
+          ) : (
+            <>
+              {isFetching
+                ? 'updating...'
+                : React.Children.toArray(
+                    posts
+                      .filter((post) => post.id === activeId)
+                      .map((post) => <p>{post.content}</p>)
+                  )}
+            </>
           )}
-        </details>
+        </div>
       </label>
     </form>
   );
@@ -137,7 +158,7 @@ const index = () => (
 export default index;
 
 const PostComponent = ({ id }) => {
-  const { data: todoItem, isLoading: loading } = useTodoQuery(id);
+  const { data: todoItem, isLoading: loading, isFetching } = useTodoQuery(id);
   const queryClient = useQueryClient();
 
   const mutation = useMutation((newTodo) => patch('/api/todos', newTodo), {
@@ -159,7 +180,13 @@ const PostComponent = ({ id }) => {
       {loading ? (
         'loading ...'
       ) : (
-        <TodoForm editTodo={editTodo} formData={todoItem} />
+        <>
+          {isFetching ? (
+            'updating...'
+          ) : (
+            <TodoForm editTodo={editTodo} formData={todoItem} />
+          )}
+        </>
       )}
     </div>
   );
