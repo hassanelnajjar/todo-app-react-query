@@ -21,7 +21,7 @@ const useTodosQuery = () =>
   useQuery('todos', () => get('/api/todos').then((res) => res.data));
 
 const useTodoQuery = (id) =>
-  useQuery('todo', () => get(`/api/todo/${id}`).then((res) => res.data));
+  useQuery(['todo', id], () => get(`/api/todo/${id}`).then((res) => res.data));
 
 const Posts = ({ setId }) => {
   const { data: posts, isFetching, isLoading } = useTodosQuery();
@@ -162,8 +162,9 @@ const PostComponent = ({ id }) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation((newTodo) => patch('/api/todos', newTodo), {
-    onSuccess: async () => {
+    onSuccess: async (newTodo) => {
       queryClient.invalidateQueries('todos');
+      queryClient.invalidateQueries(['todo', newTodo.id]);
     },
   });
 
@@ -184,7 +185,10 @@ const PostComponent = ({ id }) => {
           {isFetching ? (
             'updating...'
           ) : (
-            <TodoForm editTodo={editTodo} formData={todoItem} />
+            <>
+              <TodoForm editTodo={editTodo} formData={todoItem} />
+              <p>Edit Status : {mutation.status}</p>
+            </>
           )}
         </>
       )}
