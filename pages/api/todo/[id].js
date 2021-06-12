@@ -6,4 +6,9 @@ export default async (req, res) => {
   const { id } = req.query;
   if (method === 'GET')
     return res.status(200).json(todos.find((todo) => todo.id === id));
+  if (method === 'DELETE') {
+    todos = todos.filter((todo) => todo.id !== req.body.id);
+    console.log('body', req.body, 'body');
+    return res.status(200).json(todos);
+  }
 };
